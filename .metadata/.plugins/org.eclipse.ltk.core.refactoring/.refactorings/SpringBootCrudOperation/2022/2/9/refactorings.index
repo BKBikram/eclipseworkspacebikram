@@ -1,0 +1,15 @@
+1645520306108	Rename package 'com.SpringBootCrud.Service'
+1645520325420	Rename package 'com.SpringBootCrud.StudentController'
+1645520404719	Rename package 'com.SpringBootCrud.StudentRepository'
+1645520516238	Rename package 'com.SpringBootCrud.Entity'
+1645522814310	Rename package 'com.SpringBootCrud.studentController'
+1645529265530	Rename package 'com.SpringBootCrud.studentRepository'
+1645596714356	Delete element
+1645598231621	Rename package 'com.SpringBootCrud'
+1645598255387	Rename package 'com.SpringBootCrud.controller'
+1645598285909	Rename package 'com.SpringBootCrud.dto'
+1645598306111	Rename package 'com.SpringBootCrud.entity'
+1645598323587	Rename package 'com.SpringBootCrud.repository'
+1645598343365	Rename package 'com.SpringBootCrud.service'
+1645631643366	Copy package
+1645631705701	Delete element

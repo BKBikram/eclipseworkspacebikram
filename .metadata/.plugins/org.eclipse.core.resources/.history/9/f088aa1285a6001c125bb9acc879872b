@@ -1,0 +1,37 @@
+package com.practice9.repository;
+
+import java.util.List;
+
+import javax.persistence.criteria.Predicate;
+
+import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.practice9.entity.Friend;
+
+public class FriendCustomRepositoryImpl implements FriendRepository{
+	@Autowired
+	private EntityManager entityManager;
+
+	@Override
+	public List<Friend> findByfirstNameAndlastName(String firstName, String lastName) {
+		CriteriaBuilder cb=entityManager.getCriteriaBuilder();
+		CriteriaQuery cq=cb.createQuery();
+		Root<Friend> friend=cq.from(Friend.class);
+		
+		Predicate firstNamePredicate=cb.equal(friend.get("firstname"), firstName);
+		Predicate lastNamePredicate=cb.equal(friend.get("lastname"), lastName);
+		
+		cq.where(firstNamePredicate,lastNamePredicate);
+		TypedQuery<Friend> query=entityManager.createQuery(cq);
+		
+		return query.getResultList();
+		
+	}
+
+}

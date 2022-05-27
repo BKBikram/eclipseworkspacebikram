@@ -1,0 +1,61 @@
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+    	<title>List Employee</title>
+    	<link rel="stylesheet" 
+    	type="text/css" 
+    	href="https://cdn.datatables.net/v/bs4/dt-1.11.4/datatables.min.css"/>
+    	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" 
+    	integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" 
+    	crossorigin="anonymous">
+    </head>
+    <body>
+    <div class="container">
+    	
+    	<h2>Employee List</h2>
+    	<hr/>
+    	<a th:href="@{/addEmployeeForm}"class="btn btn-primary mb-2">Add Employee</a>
+    	<table class="table table-bordered table-striped" id="employee-table">
+    		<thead>
+    			<tr>
+    			
+    				<!-- <th>EmployeeId</th> -->
+    				<th>Name</th>
+    				<th>Email</th>
+    				<th>Age</th>
+    				<th>Actions</th>
+   
+    			</tr>
+    		</thead>
+    		  <tbody>
+    		  	<tr th:each="employees: ${employee}">
+    		  	<!-- <td th:text="${employees.empid}"></td> -->
+    		  	<td th:text="${employees.ename}"></td>
+    		  	<td th:text="${employees.email}"></td>
+    		  	<td th:text="${employees.eage}"></td>
+    		  	<td>
+    		  	<a th:href="@{/showUpdateForm(empid=${employees.empid})}" class="btn btn-info "> Update</a>
+    		  	<a th:href="@{/deleteEmployee(empid=${employees.empid})}" class="btn btn-danger ml-2 "> Delete</a>
+    		  	</td>
+    		  
+    		  </tbody>
+    	</table>
+    </div>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.11.4/datatables.min.js"></script>
+        <script>
+        $(document).ready(function(){
+         $("#employee-table").DataTable({
+        	 'aoColumDefs':[{
+        		 'bSortable':false,
+        		 'aTargets':[-1]
+        	 }]
+         });
+        })
+        </script>
+        
+    </body>
+
+
+
+
+</html>

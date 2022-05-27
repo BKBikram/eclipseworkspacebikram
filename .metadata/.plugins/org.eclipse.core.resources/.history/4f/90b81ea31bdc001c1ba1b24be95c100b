@@ -1,0 +1,5 @@
+package com.training.sample.service;
+
+public class UserService {
+
+}

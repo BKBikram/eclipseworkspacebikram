@@ -1,0 +1,22 @@
+package com.vehicles.dto;
+
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.NotBlank;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class VehicleDto {
+	private Long id;
+	@NotBlank
+	private String vehicleName;
+	@NotBlank
+	private String vehicleMaker;
+	@Digits(fraction = 1, integer = 5)
+	private Double price;
+
+}

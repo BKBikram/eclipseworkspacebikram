@@ -1,0 +1,98 @@
+package com.vehicles.service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.vehicles.dto.VehicleDto;
+import com.vehicles.entity.Vehicles;
+import com.vehicles.exception.ApiRequestException;
+import com.vehicles.repository.VehicleRepository;
+
+@Service
+public class VehicleServiceImpl implements VehicleService{
+	@Autowired
+	private VehicleRepository repo;
+
+	@Override
+	public List<VehicleDto> getAllVehicles() {
+		List<VehicleDto> responseList=new ArrayList<VehicleDto>();
+     try {
+		List<Vehicles> vehicle=repo.findAll();
+	    for(Vehicles entity:vehicle) {
+	    	VehicleDto dto=new VehicleDto();
+	    	dto.setId(entity.getId());
+	    	dto.setVehicleName(entity.getVehicleName());
+	    	dto.setVehicleMaker(entity.getVehicleMaker());
+	    	dto.setPrice(entity.getPrice());
+	    	responseList.add(dto);
+	    }
+	    return responseList;
+     }
+	    catch(Exception e) {
+	    	throw new ApiRequestException("vehicle database is empty");
+	    }
+		
+	}
+
+	@Override
+	public VehicleDto getVehicleById(Long id) {
+	try {
+		Vehicles vehicle=repo.getById(id);
+	    VehicleDto dto=new VehicleDto();
+	    dto.setVehicleName(vehicle.getVehicleName());
+	    dto.setId(vehicle.getId());
+	    dto.setVehicleMaker(vehicle.getVehicleMaker());
+	    dto.setPrice(vehicle.getPrice());
+		return dto;
+	}catch(Exception e) {
+		throw new ApiRequestException("given id of vehicle is not present");
+	}
+	}
+
+	@Override
+	public String addVehicle(@Valid VehicleDto dto) {
+		Vehicles v=new Vehicles();
+	try {
+		v.setVehicleName(dto.getVehicleName());
+		v.setVehicleMaker(dto.getVehicleMaker());
+		v.setPrice(dto.getPrice());
+		repo.save(v);
+		return "New Vehicle Added Successfully";
+	}catch(Exception e) {
+		throw new ApiRequestException("some error occured while adding new vehicle");
+	}
+		
+	}
+
+	@Override
+	public String updateVehicle(Long id, @Valid VehicleDto dto) {
+	try {
+		Vehicles v=repo.getById(id);
+		v.setVehicleName(dto.getVehicleName());
+		v.setVehicleMaker(dto.getVehicleMaker());
+		v.setPrice(dto.getPrice());
+		repo.save(v);
+		return "Vehicle Details Updated Successfully";
+	}catch(Exception e) {
+		throw new ApiRequestException("some error occured while updating the vehicle details");
+	}
+	
+	}
+
+	@Override
+	public String deleteVehicle(Long id) {
+		try {
+		repo.deleteById(id);
+		return "Vehicle Deleted Successfully";
+		}catch(Exception e) {
+			throw new ApiRequestException("some error occured,may be id is not present kindly check");
+		}
+	}
+	
+
+}

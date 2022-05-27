@@ -1,0 +1,16 @@
+package myproject;
+import java.util.Scanner;
+
+public class method4 {
+       Scanner sc=new Scanner(System.in)
+   	   int []a=new int[15];
+       a[]=sc.next
+       
+	
+	public static void main(String [] args) {
+		int r;
+		r=greatest();
+		
+	}
+
+}

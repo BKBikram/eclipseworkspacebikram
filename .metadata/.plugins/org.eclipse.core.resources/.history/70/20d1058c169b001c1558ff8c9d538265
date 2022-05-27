@@ -1,0 +1,5 @@
+package com.biplab.repository;
+
+public interface StudentRepository {
+
+}

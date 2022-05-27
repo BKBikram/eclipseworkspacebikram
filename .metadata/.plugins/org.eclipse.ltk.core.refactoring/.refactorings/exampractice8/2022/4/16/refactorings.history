@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Copy element &apos;EmployeeNotFoundException.java&apos; to &apos;sjns-user-service/src/main/java/com.alfaris.sjns.user.exception&apos;&#x0D;&#x0A;- Original project: &apos;exampractice8&apos;&#x0D;&#x0A;- Destination element: &apos;sjns-user-service/src/main/java/com.alfaris.sjns.user.exception&apos;&#x0D;&#x0A;- Original element: &apos;com.practice8.exception.EmployeeNotFoundException.java&apos;" description="Copy compilation unit" destination="=sjns-user-service/src\/main\/java=/optional=/true=/=/maven.pomderived=/true=/&lt;com.alfaris.sjns.user.exception" element1="/src\/main\/java=/optional=/true=/=/maven.pomderived=/true=/&lt;com.practice8.exception{EmployeeNotFoundException.java" files="0" flags="589830" folders="0" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyResources" stamp="1649912392346" units="1" version="1.0"/>
+</session>

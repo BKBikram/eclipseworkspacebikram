@@ -1,0 +1,51 @@
+package com.product.controller;
+
+import java.util.List;
+
+import javax.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.product.dto.ProductDto;
+import com.product.service.ProductService;
+
+@RequestMapping("/Product")
+@RestController
+public class ProductController {
+	@Autowired
+	private ProductService productService;
+	
+	@PostMapping("/addProduct")
+	public String addProduct(@Valid@RequestBody ProductDto dto) {
+		return productService.addProduct(dto);
+	}
+	
+	@GetMapping("/getAllProduct")
+	public List<ProductDto> getAllProduct() {
+		return productService.getAllProduct();
+	}
+	@GetMapping("/getProductById/{productId}")
+	public ProductDto getProductById(@PathVariable("productId")Long productId) {
+		return productService.getProductById(productId);
+	}
+	
+	@DeleteMapping("/deleteProductById/{productId}")
+	public String deleteProductById(@PathVariable("productId")Long productId) {
+		return productService.deleteProductById(productId);
+	}
+	
+	@PutMapping("/updateProductById/{productId}")
+	public String updateProductById(@PathVariable("productId")Long productId,@RequestBody ProductDto dto) {
+		return productService.updateProductById(productId,dto);
+	}
+
+
+}

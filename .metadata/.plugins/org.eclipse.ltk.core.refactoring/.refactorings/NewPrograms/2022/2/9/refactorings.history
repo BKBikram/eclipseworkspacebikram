@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Copy package &apos;com.springboot.security&apos; to &apos;SpringBootBook/src/main/java/com.SpringBootBook&apos;&#x0D;&#x0A;- Original project: &apos;NewPrograms&apos;&#x0D;&#x0A;- Destination element: &apos;SpringBootBook/src/main/java/com.SpringBootBook&apos;&#x0D;&#x0A;- Original element: &apos;NewPrograms/src/com.springboot.security&apos;" description="Copy package" destination="=SpringBootBook/src\/main\/java=/optional=/true=/=/maven.pomderived=/true=/&lt;com.SpringBootBook" element1="/src&lt;com.springboot.security" flags="589830" fragments="1" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyPackages" stamp="1645692948884" version="1.0"/>
+</session>

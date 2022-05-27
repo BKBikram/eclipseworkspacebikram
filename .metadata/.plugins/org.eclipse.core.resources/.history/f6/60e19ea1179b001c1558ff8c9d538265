@@ -1,0 +1,23 @@
+package com.biplab.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.biplab.dto.StudentDto;
+import com.biplab.entity.student;
+import com.biplab.repository.StudentRepository;
+
+@Service
+public class StudentServiceImpl implements StudentService{
+	@Autowired
+	private StudentRepository repo;
+
+	@Override
+	public String addNewStudent(StudentDto dto) {
+		student s=new student();
+		s.setName(dto.getName());
+		s.setAge(dto.getAge());
+		return null;
+	}
+
+}

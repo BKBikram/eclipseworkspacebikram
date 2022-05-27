@@ -1,0 +1,27 @@
+package com.user.repository;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository; 
+
+import com.user.entity.User;
+
+@Repository
+public interface UserRepository extends JpaRepository<User, Long>{
+	
+	 List<User> findByLastname(String lastname);
+	 List<User> findByAge(Long age);
+	 List<User> findByFirstnameAndLastname(String firstname,String lastname);
+	
+	 List<User> findByAgeLessThanEqual(Long age);
+	 List<User> findByAgeGreaterThanEqual(Long age);
+	
+	 //using query
+	 @Query("select u from User u where u.age=:a")
+	 List<User> findUserByAge(@Param("a")Long age);
+	 
+	 
+}

@@ -1,0 +1,291 @@
+package com.training.sample.entity;
+
+
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EncodingUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.provider.token.ConsumerTokenServices;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
+
+//import com.alfaris.coreach.dto.ForgetPasswordDTO;
+//import com.alfaris.coreach.dto.OtpDTO;
+//import com.alfaris.coreach.dto.RoleDTO;
+//import com.alfaris.coreach.dto.ServiceResponse;
+//import com.alfaris.coreach.dto.UsersDTO;
+//import com.alfaris.coreach.encrypt.EncryptionUtil;
+//import com.alfaris.coreach.exception.RecordCreateException;
+//import com.alfaris.coreach.exception.RecordNotFoundException;
+//import com.alfaris.coreach.exception.RecordUpdateException;
+//import com.alfaris.coreach.service.UserService;
+//import com.alfaris.coreach.util.Constants;
+
+@RestController
+@RequestMapping("/user")
+public class UserController {
+
+	private static Logger logger = LogManager.getLogger(UserController.class);
+
+	@Autowired
+	UserService userService;
+
+	@Autowired
+	MessageSource messageSource;
+
+	@Autowired
+	TokenStore tokenStore;
+
+	@Autowired
+	ConsumerTokenServices tokenServices;
+
+	private static final String USER_AGENT = "Mozilla/5.0";
+	private String clientId = "alfaris-web";
+	private String clientSecret = "123";
+	String accessToken = "";
+	String refreshToken = "";
+	String scope = "";
+	String token_type = "";
+	Long expires_in = 0L;
+	JSONObject tokenJson = new JSONObject();
+	JSONObject resJson = new JSONObject();
+
+
+	@DeleteMapping("/logout")
+	public ServiceResponse revokeToken(HttpServletRequest request, Principal principal) {
+		try {
+			String authorization = request.getHeader("Authorization");
+			if (authorization != null && authorization.contains("Bearer")) {
+				String tokenId = authorization.substring("Bearer".length() + 1);
+				OAuth2AccessToken token = tokenStore.readAccessToken(tokenId);
+				tokenStore.removeRefreshToken(token.getRefreshToken());
+				tokenServices.revokeToken(tokenId);
+			}
+
+			String userId = principal.getName();
+			String loginStatus = "S";
+			String ipAddress = request.getRemoteAddr();
+//			String ipAddress = request.getHeader("X-FORWARDED-FOR");
+//			if (StringUtils.isEmpty(ipAddress)) {
+//				ipAddress = request.getRemoteAddr();
+//			}
+			userService.saveUserLog(userId, loginStatus, ipAddress);// to save logout userlog
+
+			return new ServiceResponse(Constants.MESSAGE_STATUS.SUCCESS,
+					messageSource.getMessage("user.logout", null, LocaleContextHolder.getLocale()), null);
+		} catch (Exception e) {
+			logger.error("Error : " + e.getMessage(), e);
+			return new ServiceResponse(Constants.MESSAGE_STATUS.FAILED,
+					messageSource.getMessage("server.error", null, LocaleContextHolder.getLocale()), null);
+		}
+	}
+
+	// For Web Admin and Subcontractor Access
+	@RequestMapping(value = "/login", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<JSONObject> authendticateWebLogin(@RequestParam("username") String username,
+			@RequestParam("password") String password, Principal principal, HttpServletRequest request)
+			throws Exception {
+		JSONObject result = userService.login(username, password, principal);
+
+		String status = (String) result.get("status");
+		if (status.equalsIgnoreCase("failed")) {
+			return new ResponseEntity<>(result, new HttpHeaders(), HttpStatus.OK);
+		} else {
+			JSONObject data = (JSONObject) result.get("data");
+			String id = (String) data.get("emailId");
+
+			String oauthContext = ServletUriComponentsBuilder.fromCurrentContextPath().toUriString() + "/oauth/token";
+
+			CloseableHttpClient client = HttpClients.createDefault();
+			HttpPost httpPost = new HttpPost(oauthContext);
+			httpPost.addHeader("User-Agent", USER_AGENT);
+
+			List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+			urlParameters.add(new BasicNameValuePair("username", id));
+			urlParameters.add(new BasicNameValuePair("password", password));
+			urlParameters.add(new BasicNameValuePair("grant_type", "password"));
+
+			HttpEntity postParams = new UrlEncodedFormEntity(urlParameters);
+			httpPost.setEntity(postParams);
+
+			UsernamePasswordCredentials creds = new UsernamePasswordCredentials(clientId, clientSecret);
+			httpPost.addHeader(new BasicScheme().authenticate(creds, httpPost, null));
+			httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
+
+			CloseableHttpResponse tokenResponse = client.execute(httpPost);
+
+			String tokenResponseBody = responseBody(tokenResponse);
+			JSONParser parser = new JSONParser();
+
+			if (!StringUtils.isEmpty(tokenResponseBody)) {
+				tokenJson = (JSONObject) parser.parse(tokenResponseBody);
+
+				accessToken = (String) tokenJson.get("access_token");
+				refreshToken = (String) tokenJson.get("refresh_token");
+				scope = (String) tokenJson.get("scope");
+				token_type = (String) tokenJson.get("token_type");
+				expires_in = (Long) tokenJson.get("expires_in");
+
+			}
+			client.close();
+			result.put("accessToken", accessToken);
+			result.put("refreshToken", refreshToken);
+			result.put("scope", scope);
+			result.put("token_type", token_type);
+			result.put("expires_in", expires_in);
+			return new ResponseEntity<>(result, new HttpHeaders(), HttpStatus.OK);
+		}
+
+	}
+	
+	
+	
+	
+	private static String responseBody(CloseableHttpResponse response) throws IOException {
+		InputStream is = response.getEntity().getContent();
+		ByteArrayOutputStream result = new ByteArrayOutputStream();
+		byte[] buffer = new byte[1024];
+		int length;
+		while ((length = is.read(buffer)) != -1) {
+			result.write(buffer, 0, length);
+		}
+		return result.toString(StandardCharsets.UTF_8.name());
+	}
+	
+	//USER
+//===========//
+	
+	@PostMapping("/sendOTP")
+	public ResponseEntity<ServiceResponse> generateOTP(@RequestParam(name = "emailId", required = true) String email)throws RecordCreateException {
+			return new ResponseEntity<>(userService.generateOTP(email), new HttpHeaders(), HttpStatus.OK);
+		
+	}	
+	
+	@PostMapping("/verifyOTP")
+	public ResponseEntity<ServiceResponse> verifyOTP(@Valid @RequestBody OtpDTO dto)throws RecordCreateException {
+			return new ResponseEntity<>(userService.verifyOTP(dto), new HttpHeaders(), HttpStatus.OK);
+		
+	}	
+	@PostMapping("/resetPassword")
+	public ResponseEntity<ServiceResponse> resetPassword(@Valid @RequestBody ForgetPasswordDTO dto)throws RecordCreateException {
+			return new ResponseEntity<>(userService.resetPassword(dto), new HttpHeaders(), HttpStatus.OK);
+		
+	}	
+	
+	@PostMapping("/addUser")
+	public ResponseEntity<ServiceResponse> addUser(@Valid @RequestBody UsersDTO user, Principal principal)
+			throws RecordCreateException {
+		return new ResponseEntity<>(userService.createUser(user, principal), new HttpHeaders(), HttpStatus.OK);
+	}
+	@GetMapping("/getKey/{userId}")
+	public ResponseEntity<JSONObject> getById(@PathVariable("userId") String userId,Principal principal) 
+			throws RecordNotFoundException {
+		return new ResponseEntity<>(userService.getKey(userId, principal), new HttpHeaders(), HttpStatus.OK);
+	}
+	@PutMapping("/updateUser")
+	public ResponseEntity<ServiceResponse> update(@Valid @RequestBody UsersDTO user, Principal principal)
+			throws  RecordUpdateException {
+		return new ResponseEntity<>(userService.updateUser(user, principal), new HttpHeaders(), HttpStatus.OK);
+	}
+	@GetMapping("/getRoleCombo")
+	public ResponseEntity<JSONObject> getRoleCombo(Principal principal) throws RecordNotFoundException {
+		JSONObject list = userService.getRoleCombo(principal);
+		return new ResponseEntity<>(list, new HttpHeaders(), HttpStatus.OK);
+	}
+	@GetMapping("/search")
+	public ResponseEntity<JSONObject> empSearch(@RequestParam("searchParam") String searchParam,@RequestParam("iDisplayStart") String iDisplayStart,
+			@RequestParam("iDisplayLength") String iDisplayLength, Principal principal)throws RecordNotFoundException{
+		JSONObject list = userService.search(searchParam, Integer.parseInt(iDisplayStart), Integer.parseInt(iDisplayLength), principal);
+		return new ResponseEntity<>(list, new HttpHeaders(), HttpStatus.OK);	
+	}
+	
+	@PostMapping("/activateDeactivate")
+	public ResponseEntity<ServiceResponse> activateDeactivate(@RequestBody UsersDTO dto,Principal principle)
+			throws RecordNotFoundException {
+			return new ResponseEntity<>(userService.activateDeactivate(dto,principle), new HttpHeaders(), HttpStatus.OK);
+
+	}
+	
+	//ROLE
+//==========//
+	@GetMapping("/getScreenHeaders")//get screens to add
+	public ResponseEntity<JSONObject> getScreenHeaders(Principal principal) throws RecordNotFoundException{
+		JSONObject list = userService.getScreenHeaders(principal);
+		return new ResponseEntity<>(list, new HttpHeaders(), HttpStatus.OK);
+	}
+	
+	@GetMapping("/getScreenData")//get role data for editing
+	public ResponseEntity<ServiceResponse> getScreenData(@RequestParam(name="roleId", required = true) String roleId, Principal principal) {
+		return new ResponseEntity<>(userService.getScreenData(principal.getName(), roleId), new HttpHeaders(), HttpStatus.OK);
+	}
+	
+	@PostMapping("/addRole")//Both add and update is done in same method
+	public ResponseEntity<ServiceResponse> addRole(@RequestBody RoleDTO roleDto, Principal principal) {
+		return new ResponseEntity<>(userService.createRole(principal.getName(), roleDto), new HttpHeaders(), HttpStatus.OK);
+	}
+	
+	@GetMapping("/getRoleList")//Searching Role List
+	public ResponseEntity<JSONObject> roleList(@RequestParam(name="roleName", required = true) String roleName,@RequestParam("iDisplayStart") String iDisplayStart,
+			@RequestParam("iDisplayLength") String iDisplayLength, Principal principal)
+			throws RecordNotFoundException {
+		JSONObject list = userService.getRoleList(roleName,Integer.parseInt(iDisplayStart), Integer.parseInt(iDisplayLength), principal);
+		return new ResponseEntity<>(list, new HttpHeaders(), HttpStatus.OK);
+	}
+	
+	@GetMapping("/getScreenList")//get screen List by Logged User
+	public ResponseEntity<JSONArray> accessScreenList(Principal principal) {
+		JSONArray result = userService.accessScreenList(principal.getName());
+		return new ResponseEntity<>(result, new HttpHeaders(), HttpStatus.OK);
+	}
+	
+	@GetMapping("/getUserPermission")//get user privilege for screens
+	public ResponseEntity<ServiceResponse> userScreenPermissionList(@RequestParam(name="screenId", required = true) String screenId, Principal principal) {
+		return new ResponseEntity<>(userService.getUserScreenPermissionList(principal.getName(), screenId), new HttpHeaders(), HttpStatus.OK);
+	}
+
+}
+

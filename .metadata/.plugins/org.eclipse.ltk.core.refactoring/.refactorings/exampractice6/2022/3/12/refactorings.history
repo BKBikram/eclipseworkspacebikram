@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename package &apos;com.practice6.exception.handler&apos; to &apos;com.practice6.exception&apos;&#x0D;&#x0A;- Original project: &apos;exampractice6&apos;&#x0D;&#x0A;- Original element: &apos;exampractice6/src/main/java/com.practice6.exception.handler&apos;&#x0D;&#x0A;- Renamed element: &apos;exampractice6/src/main/java/com.practice6.exception&apos;&#x0D;&#x0A;- Update references to refactored element&#x0D;&#x0A;- Update textual occurrences in comments and strings" description="Rename package &apos;com.practice6.exception.handler&apos;" flags="589830" hierarchical="false" id="org.eclipse.jdt.ui.rename.package" input="/src\/main\/java=/optional=/true=/=/maven.pomderived=/true=/&lt;com.practice6.exception.handler" name="com.practice6.exception" qualified="false" references="true" stamp="1647335000487" textual="false" version="1.0"/>
+</session>

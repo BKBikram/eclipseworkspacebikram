@@ -1,0 +1,5 @@
+package com.biplab.dto;
+
+public class StudentDto {
+
+}

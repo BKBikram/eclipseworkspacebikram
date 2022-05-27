@@ -1,0 +1,5 @@
+package com.biplab.controller;
+
+public class StudentController {
+
+}

@@ -1,0 +1,5 @@
+package com.biplab.entity;
+
+public class student {
+
+}
